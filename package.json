@@ -1,0 +1,17 @@
+{
+  "name": "ig4",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "chalk": "^2.3.2",
+    "instagram-private-api": "^0.6.7",
+    "jsonfile": "^4.0.0",
+    "lodash": "^4.17.5"
+  }
+}
