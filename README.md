@@ -16,20 +16,20 @@ The first will be the **cred.js** file. You can just copy *cred.exmaple.js* and 
 The second file, **config.js**, stores the behavior of the bot. You can copy *config.example.js* and rename it to *config.js*. The config file could look like that:
 
     module.exports = {
-	    
-	    // Related Tags
-	    tags: [ 
+	   
+		// Related Tags
+		tags: [ 
 		    "picoftheday", 
 		    "like4like", 
 		    "follow4follow" 
-	    ],
-	    
-	    // Enable Track & Auto Delete Duration 
-	    trackLikes: true, 
-	    trackFollows: true, 
-	    followDuration: 6 * 60 * 60 * 1000, 
-	    likeDuration: 2 * 60 * 60 * 1000, 
-	    
+		],
+
+		// Enable Track & Auto Delete Duration 
+		trackLikes: true, 
+		trackFollows: true, 
+		followDuration: 6 * 60 * 60 * 1000, 
+		likeDuration: 2 * 60 * 60 * 1000, 
+
 		// Max Delayed Time for each delete request for more human delete actions 
 		unfollowTime: 5000, 
 		unlikeTime: 20000, 
