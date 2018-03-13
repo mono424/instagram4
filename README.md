@@ -33,6 +33,7 @@ The second file, **config.js**, stores the behavior of the bot. You can copy *co
 		// Max Delayed Time for each delete request for more human delete actions 
 		unfollowTime: 5000, 
 		unlikeTime: 20000, 
+		
 		// Display of Status 
 		statusRate: 3 * 60 * 1000, 
 
