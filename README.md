@@ -3,8 +3,6 @@
   Instagram4
 </h1>
 
-# Welcome to Instagram4
-
 Hey, this is human acting Instagram Bot, which pretends activity on Instagram so you gain followers withouts doing anything. **Instagram4** is able to like stuff & follow persons in areas you define.
 
 ## Get Started!
