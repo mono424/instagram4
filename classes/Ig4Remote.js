@@ -14,8 +14,7 @@ module.exports = class Ig4Remote {
 
   async start() {
     this.server = Hapi.server({
-        port: this.port,
-        host: 'localhost'
+        port: this.port
     });
 
     this.server.route({
