@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>IG4 Log</title>
+  </head>
+  <style media="screen">
+    body {
+      font-family: helvetica, sans-serif;
+      color: rgb(98, 98, 98);
+      padding: 2vh 20px;
+      height: 94vh;
+      background: rgb(242, 240, 240);
+    }
+
+    .log {
+      box-sizing: border-box;
+      background: white;
+      height: 100%;
+      width: 100%;
+      padding: 10px;
+      box-shadow: 0 1px 4px rgb(167, 167, 167);
+      border-radius: 3px;
+      overflow-x: auto;
+    }
+
+    .row {
+      margin: 0 0 20px 0;
+    }
+
+    .time {
+      display: inline-block;
+      font-size: 9px;
+      padding: 3px 6px;
+      border-radius: 8px;
+      background: rgb(154, 154, 154);
+      color: white;
+      margin: 0 5px;
+      width: 100px;
+      text-align: center;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js" charset="utf-8"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/locale/de.js" charset="utf-8"></script>
+  <body>
+    <button id="start">start</button>
+    <button id="stop">stop</button>
+    <div class="log">
+      {{#each data as |row|}}
+      <div class="row"><span class="time" data-time="{{row.date}}"></span>{{row.data}}</div>
+      {{/each}}
+    </div>
+
+
+    <script>
+      document.querySelectorAll('.time').forEach( item => {
+        let updateTime = () => {
+          var time = moment(new Date(item.dataset.time));
+          item.innerHTML = time.fromNow();
+        };
+        setInterval(updateTime, 1000);
+        updateTime();
+      });
+
+      document.querySelector('#start').addEventListener('click', () => {
+        request('/start');
+        setTimeout(() => {
+          location.reload();
+        }, 1000)
+      });
+
+      document.querySelector('#stop').addEventListener('click', () => {
+        request('/stop');
+        setTimeout(() => {
+          location.reload();
+        }, 1000)
+      });
+
+      setTimeout(() => {
+        location.reload();
+      }, 30000)
+
+      function request(path) {
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.open("GET", path, true);
+        xmlhttp.send();
+      }
+    </script>
+  </body>
+</html>

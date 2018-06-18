@@ -1,5 +1,6 @@
 const fs = require('fs');
 const Hapi = require('hapi');
+const Handlebars = require('handlebars');
 const { spawn } = require('child_process');
 
 module.exports = class Ig4Remote {
@@ -76,10 +77,20 @@ module.exports = class Ig4Remote {
   }
 
   addToIg4Log(data, type = "data") {
-    this.log.push({ data, type });
+    this.log.push({ data, type, date: new Date() });
     while (this.log.length > this.logLineLength) {
       this.log.shift();
     }
+  }
+
+  template(templateName, data = {}) {
+    return new Promise( (resolve, reject) => {
+      fs.readFile(`./templates/${templateName}.hbs`, function(err, hbs) {
+        if (err) return reject(err);
+        var template = Handlebars.compile(hbs.toString());
+        resolve(template(data));
+      });
+    });
   }
 
   route_status(request, h) {
@@ -87,7 +98,9 @@ module.exports = class Ig4Remote {
   }
 
   route_log(request, h) {
-    return "<ol>" + this.log.map( item => `<li>${item.data}<li>` ).join('\n') + "</ol>";
+    return this.template('log', {
+      data: this.log.filter( l => l ).reverse()
+    });
   }
 
   route_start(request, h) {
