@@ -1,10 +1,5 @@
 module.exports = {
 
-  // Server
-  server: {
-    port: 8080
-  },
-
   // Related Tags
   tags: [
     "picoftheday",
