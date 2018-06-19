@@ -2,7 +2,14 @@ var Ig4 = require('./classes/Ig4');
 var Human = require('./classes/Human');
 var { user, pass } = require('./cred');
 var { sessionDuration, tags, maxTagsCombined, maxLikesPerSession, maxFollowsPerSession, followDuration, likeDuration, statusRate, unfollowTime, unlikeTime, trackLikes, trackFollows, maxFollowSessionDelay, maxLikeSessionDelay, startLikeDelay, startFollowDelay } = require('./config');
-let client = new Ig4("ig" + user + "ig", { maxTagsCombined, unfollowTime, unlikeTime, trackLikes, trackFollows });
+let mode = Ig4.mode.text;
+process.argv.forEach( val => {
+  if (val === "-json") {
+    mode = Ig4.mode.json;
+  }
+});
+
+let client = new Ig4("ig" + user + "ig", { maxTagsCombined, unfollowTime, unlikeTime, trackLikes, trackFollows, mode });
 const hour = 60 * 60 * 1000;
 
 client.login(user, pass).then( () => {

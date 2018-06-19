@@ -52,7 +52,7 @@ module.exports = class Ig4Remote {
   }
 
   ig4Start() {
-    this.ig4 = spawn('node', ['app.js']);
+    this.ig4 = spawn('node', ['app.js', '-json']);
     this.ig4.stdout.on('data', (...args) => this.handleIg4Data(...args));
     this.ig4.stderr.on('data', (...args) => this.handleIg4Error(...args));
     this.ig4.on('close', (...args) => this.handleIg4Close(...args));

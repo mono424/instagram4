@@ -9,9 +9,18 @@ const dataDir = __dirname + '/../data';
 const followStateFile = dataDir + "/auto-follow.json";
 const likeStateFile = dataDir + "/auto-like.json";
 
+const mode = {
+  'json': Symbol("json"),
+  'text': Symbol("text")
+};
+
 module.exports = class Ig4 {
 
-  constructor(devId = "someuser", { maxTagsCombined = 5, defaultLikeLimit = 5, defaultFollowLimit = 5, unfollowTime = 2000, unlikeTime = 2000, trackLikes = true, trackFollows = true}){
+  static get mode() {
+    return mode;
+  }
+
+  constructor(devId = "someuser", { maxTagsCombined = 5, defaultLikeLimit = 5, defaultFollowLimit = 5, unfollowTime = 2000, unlikeTime = 2000, trackLikes = true, trackFollows = true, mode = Ig4.mode.text}){
     this.maxTagsCombined = maxTagsCombined;
     this.defaultLikeLimit = defaultLikeLimit;
     this.defaultFollowLimit = defaultFollowLimit;
@@ -19,6 +28,7 @@ module.exports = class Ig4 {
     this.unlikeTime = unlikeTime;
     this.trackLikes = trackLikes;
     this.trackFollows = trackFollows;
+    this.mode = mode;
     this.lastGotFeed = 0;
     this.autoFollowState = [];
     this.autoLikeState = [];
@@ -59,15 +69,25 @@ module.exports = class Ig4 {
   status(){
     return new Promise( (resolve, reject) => {
       this.getAccount().then( acc => {
-        let params = acc._params;
-        log(chalk.white('------------------------'));
-        log(chalk.white( " " + chalk.underline('Your PK') + ":  " + chalk.bold(params.pk)) + " " );
-        log(chalk.white( " " + chalk.underline('Your Username') + ":  " + chalk.bold(params.username)) + " " );
-        log(chalk.white( " " + chalk.underline('Your Follower') + ":  " + chalk.green.bold(params.followerCount)) + " " );
-        log(chalk.white( " " + chalk.underline('You Following') + ":  " + chalk.red.bold(params.followingCount)) + " " );
-        log(chalk.white( " " + chalk.underline('Auto-Followed') + ":  " + chalk.bold(this.autoFollowState.length)) + " " );
-        log(chalk.white( " " + chalk.underline('Auto-Liked') + ": " + chalk.bold(this.autoLikeState.length)) + " " );
-        log(chalk.white('------------------------'));
+
+        let { pk, username, followerCount, followingCount } = acc._params;
+        let autoFollowedCount = this.autoFollowState.length;
+        let autoLikedCount = this.autoLikeState.length;
+        if (this.mode === mode.text) {
+          log(chalk.white('------------------------'));
+          log(chalk.white( " " + chalk.underline('Your PK') + ":  " + chalk.bold(pk)) + " " );
+          log(chalk.white( " " + chalk.underline('Your Username') + ":  " + chalk.bold(username)) + " " );
+          log(chalk.white( " " + chalk.underline('Your Follower') + ":  " + chalk.green.bold(followerCount)) + " " );
+          log(chalk.white( " " + chalk.underline('You Following') + ":  " + chalk.red.bold(followingCount)) + " " );
+          log(chalk.white( " " + chalk.underline('Auto-Followed') + ":  " + chalk.bold(autoFollowedCount)) + " " );
+          log(chalk.white( " " + chalk.underline('Auto-Liked') + ": " + chalk.bold(autoLikedCount)) + " " );
+          log(chalk.white('------------------------'));
+        }
+
+        if (this.mode === mode.json) {
+          log(this.jsonOutput('status', { pk, username, followerCount, followingCount, autoFollowedCount, autoLikedCount }));
+        }
+
         resolve();
       });
     });
@@ -75,6 +95,13 @@ module.exports = class Ig4 {
 
   completeCleanup(){
     return Promise.all([this.unfollowOld(0), this.unlikeOld(0)]);
+  }
+
+  jsonOutput(action, data) {
+    return JSON.stringify({
+      action,
+      data
+    });
   }
 
   ////////////////
