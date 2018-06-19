@@ -32,6 +32,12 @@ module.exports = class Ig4 {
     this.lastGotFeed = 0;
     this.autoFollowState = [];
     this.autoLikeState = [];
+    this.periodStates = {
+      autoFollow: false,
+      autoLike: false,
+      // followCleanup: false,
+      // likeCleanup: false
+    };
     this.device = new Client.Device(devId);
     this.storage = new Client.CookieFileStorage(dataDir + '/cookies/user.json');
     this.autoFollowLoadState();
@@ -58,7 +64,9 @@ module.exports = class Ig4 {
   ////////////
 
   statusPeriod(timeMs){
-    log(chalk.blue('Started Status Period'));
+    if (this.mode === mode.text) {
+      log(chalk.blue('Started Status Period'));
+    }
     this.status();
 
     return setInterval(() => {
@@ -71,6 +79,7 @@ module.exports = class Ig4 {
       this.getAccount().then( acc => {
 
         let { pk, username, followerCount, followingCount } = acc._params;
+        let { periodStates } = this;
         let autoFollowedCount = this.autoFollowState.length;
         let autoLikedCount = this.autoLikeState.length;
         if (this.mode === mode.text) {
@@ -81,11 +90,13 @@ module.exports = class Ig4 {
           log(chalk.white( " " + chalk.underline('You Following') + ":  " + chalk.red.bold(followingCount)) + " " );
           log(chalk.white( " " + chalk.underline('Auto-Followed') + ":  " + chalk.bold(autoFollowedCount)) + " " );
           log(chalk.white( " " + chalk.underline('Auto-Liked') + ": " + chalk.bold(autoLikedCount)) + " " );
+          log(chalk.white( " " + chalk.underline('AutoLike-Running') + ": " + chalk.bold(periodStates.autoLike ? "active" : "waiting")) + " " );
+          log(chalk.white( " " + chalk.underline('AutoFollow-Running') + ": " + chalk.bold(periodStates.autoFollow ? "active" : "waiting")) + " " );
           log(chalk.white('------------------------'));
         }
 
         if (this.mode === mode.json) {
-          log(this.jsonOutput('status', { pk, username, followerCount, followingCount, autoFollowedCount, autoLikedCount }));
+          log(this.jsonOutput('status', { pk, username, followerCount, followingCount, autoFollowedCount, autoLikedCount, periodStates }));
         }
 
         resolve();
@@ -109,7 +120,9 @@ module.exports = class Ig4 {
   ////////////////
 
   autoFollowCleanUpPeriod(timeMs, oldTimeMs){
-    log(chalk.blue('Started AutoFollow Cleanup Period'));
+    if (this.mode === mode.text) {
+      log(chalk.blue('Started AutoFollow Cleanup Period'));
+    }
     let running = true;
     this.unfollowOld(oldTimeMs).then( () => {
       running = false;
@@ -129,7 +142,9 @@ module.exports = class Ig4 {
   }
 
   autoFollowPeriod(timeMs, limit, maxFollowSessionDelay){
-    log(chalk.blue('Started AutoFollow Period'));
+    if (this.mode === mode.text) {
+      log(chalk.blue('Started AutoFollow Period'));
+    }
     this.autoFollow(timeMs, limit);
 
     return setInterval(() => {
@@ -138,15 +153,21 @@ module.exports = class Ig4 {
   }
 
   autoFollow(timeMs, limit){
-    log(chalk.bold.cyan(` ** Started AutoFollow Session ** `));
+    this.periodStates.autoFollow = true;
+    if (this.mode === mode.text) {
+      log(chalk.bold.cyan(` ** Started AutoFollow Session ** `));
+    }
     limit = !limit ? this.defaultFollowLimit : limit;
 
     return new Promise( (resolve, reject) => {
       this.findRelevantMedia(limit).then( res => {
         let users = this.getPotentialUser(res, limit);
-        log(chalk.cyan(`AutoFollow with ${users.length} for ${timeMs}ms`));
+        if (this.mode === mode.text) {
+          log(chalk.cyan(`AutoFollow with ${users.length} for ${timeMs}ms`));
+        }
         resolve(Human.run(timeMs, users.length, id => {
           let user = users[id];
+          let lastRun = users.length === id + 1;
           this.follow(user).then( res => {
             if (this.trackFollows) this.autoFollowState.push({
               pk: user.pk,
@@ -154,7 +175,11 @@ module.exports = class Ig4 {
               subTime: _.now()
             });
             this.autoFollowSaveState();
-          }).catch(err => {log(chalk.white.bgRed(err.message)); reject(err);});
+            if (lastRun) this.periodStates.autoFollow = false;
+          }).catch(err => {
+            if (this.mode === mode.text) { log(chalk.white.bgRed(err.message)); } reject(err);
+            if (lastRun) this.periodStates.autoFollow = false;
+          });
         }));
       }).catch(reject);
     });
@@ -188,11 +213,15 @@ module.exports = class Ig4 {
       });
 
       if(old.length === 0){
-        log(chalk.red.underline('Nobody to unfollow.'));
+        if (this.mode === mode.text) {
+          log(chalk.red.underline('Nobody to unfollow.'));
+        }
         return resolve();
       }
 
-      log(chalk.red.underline('Unfollowing ' + old.length));
+      if (this.mode === mode.text) {
+        log(chalk.red.underline('Unfollowing ' + old.length));
+      }
 
       let final = res => {
         this.autoFollowState = this.autoFollowState.filter( info => {
@@ -211,7 +240,9 @@ module.exports = class Ig4 {
           if(id === old.length - 1) final(successfulDeleted);
         }).catch( () => {
           if(err.message && err.message.indexOf('block') > -1){
-            log(chalk.white.bgRed(err.message));
+            if (this.mode === mode.text) {
+              log(chalk.white.bgRed(err.message));
+            }
           }else{
             successfulDeleted.push(info.mediaId);
           }
@@ -227,7 +258,9 @@ module.exports = class Ig4 {
 
 
   autoLikeCleanUpPeriod(timeMs, oldTimeMs){
-    log(chalk.blue('Started AutoLike Cleanup Period'));
+    if (this.mode === mode.text) {
+      log(chalk.blue('Started AutoLike Cleanup Period'));
+    }
     let running = true;
     this.unlikeOld(oldTimeMs).then( () => {
       running = false;
@@ -247,7 +280,9 @@ module.exports = class Ig4 {
   }
 
   autoLikePeriod(timeMs, limit, maxLikeSessionDelay){
-    log(chalk.blue('Started AutoLike Period'));
+    if (this.mode === mode.text) {
+      log(chalk.blue('Started AutoLike Period'));
+    }
     this.autoLike(timeMs, limit);
 
     return setInterval(() => {
@@ -256,15 +291,21 @@ module.exports = class Ig4 {
   }
 
   autoLike(timeMs, limit = null){
-    log(chalk.bold.cyan(` ** Started AutoLike Session ** `));
+    this.periodStates.autoLike = true;
+    if (this.mode === mode.text) {
+      log(chalk.bold.cyan(` ** Started AutoLike Session ** `));
+    }
     limit = !limit ? this.defaultLikeLimit : limit;
 
     return new Promise( (resolve, reject) => {
       this.findRelevantMedia(limit).then( res => {
         let mediaIds = _.take( res , limit);
-        log(chalk.cyan(`AutoLike with ${mediaIds.length} for ${timeMs}ms`));
+        if (this.mode === mode.text) {
+          log(chalk.cyan(`AutoLike with ${mediaIds.length} for ${timeMs}ms`));
+        }
         resolve(Human.run(timeMs, mediaIds.length, id => {
           let media = mediaIds[id];
+          let lastRun = mediaIds.length === id + 1;
           this.like(media).then( () => {
             if (this.trackLikes) this.autoLikeState.push({
               mediaId,
@@ -272,7 +313,14 @@ module.exports = class Ig4 {
               likeTime: _.now()
             });
             this.autoLikeSaveState();
-          }).catch(err => {log(chalk.white.bgRed(err.message)); reject(err);})
+            if (lastRun) this.periodStates.autoLike = false;
+          }).catch(err => {
+            if (this.mode === mode.text) {
+              log(chalk.white.bgRed(err.message));
+            }
+            if (lastRun) this.periodStates.autoLike = false;
+            reject(err);
+          })
         }));
       }).catch(reject);
     });
@@ -298,11 +346,15 @@ module.exports = class Ig4 {
       });
 
       if(old.length === 0){
-        log(chalk.red.underline('Nothing to unlike.'));
+        if (this.mode === mode.text) {
+          log(chalk.red.underline('Nothing to unlike.'));
+        }
         return resolve();
       }
 
-      log(chalk.red.underline('Unliking ' + old.length));
+      if (this.mode === mode.text) {
+        log(chalk.red.underline('Unliking ' + old.length));
+      }
 
       let final = res => {
         this.autoLikeState = this.autoLikeState.filter( info => {
@@ -321,7 +373,9 @@ module.exports = class Ig4 {
           if(id === old.length - 1) final(successfulDeleted);
         }).catch( (err) => {
           if(err.message && err.message.indexOf('block') > -1){
-            log(chalk.white.bgRed(err.message));
+            if (this.mode === mode.text) {
+              log(chalk.white.bgRed(err.message));
+            }
           }else{
             successfulDeleted.push(info.mediaId);
           }
@@ -360,7 +414,9 @@ module.exports = class Ig4 {
             return addMedia();
           }
 
-          log(chalk.cyan(` -> ${output.length} relevant Media for ${tags.join(', ')}`));
+          if (this.mode === mode.text) {
+            log(chalk.cyan(` -> ${output.length} relevant Media for ${tags.join(', ')}`));
+          }
           return resolve(output);
         });
       }
