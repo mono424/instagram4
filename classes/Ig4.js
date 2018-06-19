@@ -147,7 +147,7 @@ module.exports = class Ig4 {
         log(chalk.cyan(`AutoFollow with ${users.length} for ${timeMs}ms`));
         resolve(Human.run(timeMs, users.length, id => {
           let user = users[id];
-          this.follow(user.pk, user.username).then( res => {
+          this.follow(user).then( res => {
             if (this.trackFollows) this.autoFollowState.push({
               pk: user.pk,
               username: user.username,
@@ -265,9 +265,7 @@ module.exports = class Ig4 {
         log(chalk.cyan(`AutoLike with ${mediaIds.length} for ${timeMs}ms`));
         resolve(Human.run(timeMs, mediaIds.length, id => {
           let media = mediaIds[id];
-          let mediaId = media.id;
-          let caption = media._params.caption ? media._params.caption.substr(0, 32).replace(/(\r\n\t|\n|\r\t)/gm,"") : mediaId;
-          this.like(mediaId, caption).then( () => {
+          this.like(media).then( () => {
             if (this.trackLikes) this.autoLikeState.push({
               mediaId,
               caption,
@@ -381,23 +379,54 @@ module.exports = class Ig4 {
     });
   }
 
-  like(mediaId, info = null){
-    log(chalk.green.underline('Liked: ' + (info ? info : mediaId)));
+  like(media){
+    let mediaId = media.id;
+
+    if (this.mode === mode.text) {
+      let caption = media._params.caption ? media._params.caption.substr(0, 32).replace(/(\r\n\t|\n|\r\t)/gm,"") : mediaId;
+      log(chalk.green.underline('Liked: ' + (info ? info : mediaId)));
+    }
+
+    if (this.mode === mode.json) {
+      log(this.jsonOutput('liked', { media: media._params }));
+    }
+
     return Client.Like.create(this.session, mediaId);
   }
 
   unlike(mediaId, info = null){
-    log(chalk.red.underline('Unliked: ' + (info ? info : mediaId)));
+    if (this.mode === mode.text) {
+      log(chalk.red.underline('Unliked: ' + (info ? info : mediaId)));
+    }
+
+    if (this.mode === mode.json) {
+      log(this.jsonOutput('unliked', { mediaId, info }));
+    }
+
     return Client.Like.destroy(this.session, mediaId);
   }
 
-  follow(accId, info = null){
-    log(chalk.green.underline('Followed: ' + (info ? info : accId)));
-    return Client.Relationship.create(this.session, accId);
+  follow(user){
+    if (this.mode === mode.text) {
+      log(chalk.green.underline('Followed: ' + user.username));
+    }
+
+    if (this.mode === mode.json) {
+      log(this.jsonOutput('followed', { user }));
+    }
+
+    return Client.Relationship.create(this.session, user.pk);
   }
 
   unfollow(accId, info = null){
-    log(chalk.red.underline('Unfollowed: ' + (info ? info : accId)));
+    if (this.mode === mode.text) {
+      log(chalk.red.underline('Unfollowed: ' + (info ? info : accId)));
+    }
+
+    if (this.mode === mode.json) {
+      log(this.jsonOutput('unfollowed', { accId, info }));
+    }
+
     return Client.Relationship.destroy(this.session, accId);
   }
 
