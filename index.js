@@ -1,7 +1,7 @@
 var Ig4 = require('./classes/Ig4');
 var Human = require('./classes/Human');
-var { user, pass } = require('./cred');
 let mode = Ig4.mode.text;
+let credPath = './cred';
 let configPath = './config';
 process.argv.forEach( val => {
   if (val === "-json") {
@@ -10,8 +10,12 @@ process.argv.forEach( val => {
   if (val.match(/^-config=/)) {
     configPath = val.substr(8);
   }
+  if (val.match(/^-credentials=/)) {
+    credPath = val.substr(13);
+  }
 });
 
+var { user, pass } = require(credPath);
 var { sessionDuration, tags, maxTagsCombined, maxLikesPerSession, maxFollowsPerSession, followDuration, likeDuration, statusRate, unfollowTime, unlikeTime, trackLikes, trackFollows, maxFollowSessionDelay, maxLikeSessionDelay, startLikeDelay, startFollowDelay } = require(configPath);
 let client = new Ig4("ig" + user + "ig", { maxTagsCombined, unfollowTime, unlikeTime, trackLikes, trackFollows, mode });
 const hour = 60 * 60 * 1000;
