@@ -10,8 +10,6 @@
   "license": "ISC",
   "dependencies": {
     "chalk": "^2.3.2",
-    "handlebars": "^4.0.11",
-    "hapi": "^17.5.1",
     "instagram-private-api": "^0.6.8",
     "jsonfile": "^4.0.0",
     "lodash": "^4.17.5"
