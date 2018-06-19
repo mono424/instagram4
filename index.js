@@ -11,7 +11,7 @@ process.argv.forEach( val => {
     configPath = val.substr(8);
   }
 });
-console.log('Config: ' + configPath);
+
 var { sessionDuration, tags, maxTagsCombined, maxLikesPerSession, maxFollowsPerSession, followDuration, likeDuration, statusRate, unfollowTime, unlikeTime, trackLikes, trackFollows, maxFollowSessionDelay, maxLikeSessionDelay, startLikeDelay, startFollowDelay } = require(configPath);
 let client = new Ig4("ig" + user + "ig", { maxTagsCombined, unfollowTime, unlikeTime, trackLikes, trackFollows, mode });
 const hour = 60 * 60 * 1000;
