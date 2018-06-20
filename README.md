@@ -60,8 +60,11 @@ And after setting it up, just run following in terminal:
 to install the dependencies & run it.
 
 ## Startup Parameters
+
 **-json** *All output JSON-Encoded*
+
 **-config=[path-to-config]** *set custom config path*
+
 **-credentials=[path-to-credentials]** *set custom credentials path*
 
 ## Sorry but no sorry
