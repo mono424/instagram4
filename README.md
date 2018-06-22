@@ -59,6 +59,14 @@ And after setting it up, just run following in terminal:
     npm i && npm run start
 to install the dependencies & run it.
 
+## Startup Parameters
+
+**-json** *All output JSON-Encoded*
+
+**-config=[path-to-config]** *set custom config path*
+
+**-credentials=[path-to-credentials]** *set custom credentials path*
+
 ## Sorry but no sorry
 I quickly made this in my freetime, so **sorry for the lack of documentation**, feel free to **contribute and improve** this bot.
 
