@@ -109,10 +109,22 @@ module.exports = class Ig4 {
   }
 
   jsonOutput(action, data) {
-    return JSON.stringify({
-      action,
-      data
-    });
+    let output = "";
+    try {
+      output = JSON.stringify({
+        action,
+        data
+      });
+    } catch (e) {
+      output = JSON.stringify({
+        action: "error",
+        data : {
+          type: "json",
+          data: e
+        }
+      });
+    }
+    return output;
   }
 
   ////////////////
